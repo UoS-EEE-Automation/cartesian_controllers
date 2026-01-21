@@ -143,17 +143,24 @@ controller_interface::return_type CartesianForceController::update(const rclcpp:
 
 ctrl::Vector6D CartesianForceController::computeForceError()
 {
-  ctrl::Vector6D target_wrench;
+  ctrl::Vector6D target_wrench = m_target_wrench;
   m_hand_frame_control = get_node()->get_parameter("hand_frame_control").as_bool();
+  m_z_only_force_correction = get_node()->get_parameter("z_only_force_correction").as_bool();
+
+  if(m_z_only_force_correction)
+  {
+    target_wrench(0) = -m_ft_sensor_wrench(0);
+    target_wrench(1) = -m_ft_sensor_wrench(1);
+    target_wrench(3) = -m_ft_sensor_wrench(3);
+    target_wrench(4) = -m_ft_sensor_wrench(4);
+    target_wrench(5) = -m_ft_sensor_wrench(5);
+  }
 
   if (m_hand_frame_control)  // Assume end-effector frame by convention
   {
-    target_wrench = Base::displayInBaseLink(m_target_wrench, Base::m_end_effector_link);
+    target_wrench = Base::displayInBaseLink(target_wrench, Base::m_end_effector_link);
   }
-  else  // Default to robot base frame
-  {
-    target_wrench = m_target_wrench;
-  }
+
 
   // Superimpose target wrench and sensor wrench in base frame
   return Base::displayInBaseLink(m_ft_sensor_wrench, m_new_ft_sensor_ref) + target_wrench;

@@ -120,6 +120,9 @@ private:
      * intuitive for tele-manipulation.
      */
   bool m_hand_frame_control;
+
+    // Correct only the Z force, X torque, and Y torque, useful for inspection scenarious
+  bool m_z_only_force_correction;
 };
 
 }  // namespace cartesian_force_controller
